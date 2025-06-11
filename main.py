@@ -1,3 +1,4 @@
+# type: ignore
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import boto3
