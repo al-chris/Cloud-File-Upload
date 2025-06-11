@@ -10,4 +10,6 @@ wheels/
 .venv
 .env
 
-GOOGLE_APPLICATION_CREDENTIALS.json
+credentials.json
+token.json
+cred/
