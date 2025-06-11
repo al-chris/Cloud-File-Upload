@@ -64,38 +64,26 @@ def get_gcs_client():
 def get_drive_service():
     try:
         creds = None
+        token_path = "cred/drive/token.json"
+        creds_file = "cred/drive/credentials.json"
+        scopes = ["https://www.googleapis.com/auth/drive.file"]
+
         # Load existing token
-        if os.path.exists(CloudConfig.GOOGLE_DRIVE_TOKEN_FILE):
-            creds = Credentials.from_authorized_user_file(CloudConfig.GOOGLE_DRIVE_TOKEN_FILE)
-        
+        if os.path.exists(token_path):
+            creds = Credentials.from_authorized_user_file(token_path, scopes)
+
         # If there are no valid credentials, let the user log in
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                if not CloudConfig.GOOGLE_DRIVE_CREDENTIALS_FILE:
-                    raise HTTPException(
-                        status_code=500, 
-                        detail="Google Drive credentials file not configured"
-                    )
-                
-                flow = Flow.from_client_secrets_file(
-                    CloudConfig.GOOGLE_DRIVE_CREDENTIALS_FILE,
-                    scopes=['https://www.googleapis.com/auth/drive.file']
-                )
-                flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
-                
                 raise HTTPException(
                     status_code=401,
-                    detail="Google Drive authentication required. Please run authentication flow."
+                    detail="Google Drive authentication required. Please run google_auth_flow.py to authenticate."
                 )
-        
-        # Save credentials for next run
-        with open(CloudConfig.GOOGLE_DRIVE_TOKEN_FILE, 'w') as token:
-            token.write(creds.to_json())
-        
+
         return build('drive', 'v3', credentials=creds)
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to initialize Drive service: {str(e)}")
 

@@ -136,7 +136,7 @@ curl http://localhost:8000/health
 3. **Google Drive Auth Error**: Complete OAuth flow for first-time setup
 4. **File Upload Error**: Check file size limits and bucket permissions
 
-## Resourses
+## Resources
 - https://developers.google.com/workspace/drive/api/quickstart/python
 
 ## Optional Enhancements
