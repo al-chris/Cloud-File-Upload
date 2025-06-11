@@ -1,21 +1,5 @@
 # Cloud File Upload API - Setup Instructions
 
-## Requirements
-
-Create a `requirements.txt` file:
-
-```txt
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-boto3==1.34.0
-google-cloud-storage==2.10.0
-google-api-python-client==2.108.0
-google-auth-httplib2==0.1.1
-google-auth-oauthlib==1.1.0
-python-multipart==0.0.6
-pydantic==2.5.0
-```
-
 ## Environment Variables
 
 Create a `.env` file with the following variables:
@@ -41,8 +25,11 @@ GOOGLE_DRIVE_FOLDER_ID=your_drive_folder_id  # Optional
 
 ### 1. Install Dependencies
 
+Using [uv](https://github.com/astral-sh/uv):
+
 ```bash
-pip install -r requirements.txt
+uv venv
+uv sync
 ```
 
 ### 2. AWS S3 Setup
@@ -68,7 +55,13 @@ pip install -r requirements.txt
 4. Download the credentials JSON file
 5. Set `GOOGLE_DRIVE_CREDENTIALS_FILE` to the JSON file path
 
-**Note**: For Google Drive, you'll need to run the authentication flow once. The first time you use the Drive endpoint, you may need to authenticate manually.
+**Note**: For Google Drive, you'll need to run the authentication flow once. Run:
+
+```bash
+python google_auth_flow.py
+```
+
+The first time you use the Drive endpoint, you may need to authenticate manually.
 
 ### 5. Run the Application
 
@@ -88,6 +81,9 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - `POST /upload/gcs` - Upload to Google Cloud Storage
 - `POST /upload/drive` - Upload to Google Drive
 - `POST /upload/all` - Upload to all configured services
+- `GET /list/s3` - List files in AWS S3
+- `GET /list/gcs` - List files in Google Cloud Storage
+- `GET /list/drive` - List files in Google Drive
 - `GET /health` - Check service configuration status
 
 ## Usage Examples
@@ -115,6 +111,21 @@ curl -X POST "http://localhost:8000/upload/drive" \
      -H "Content-Type: multipart/form-data" \
      -F "file=@your-file.pdf"
 ```
+
+### List Files
+
+- List S3 files:
+  ```bash
+  curl http://localhost:8000/list/s3
+  ```
+- List GCS files:
+  ```bash
+  curl http://localhost:8000/list/gcs
+  ```
+- List Google Drive files:
+  ```bash
+  curl http://localhost:8000/list/drive
+  ```
 
 ### Health Check
 ```bash
