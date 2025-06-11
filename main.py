@@ -236,6 +236,65 @@ async def upload_to_all_services(file: UploadFile = File(...)):
     
     return {"results": results}
 
+
+@app.get("/list/s3")
+async def list_s3_files():
+    """List files in AWS S3 bucket"""
+    if not CloudConfig.S3_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="S3 bucket name not configured")
+    try:
+        s3_client = get_s3_client()
+        response = s3_client.list_objects_v2(Bucket=CloudConfig.S3_BUCKET_NAME)
+        files = []
+        for obj in response.get('Contents', []):
+            files.append({
+                "key": obj["Key"],
+                "size": obj["Size"],
+                "last_modified": obj["LastModified"].isoformat()
+            })
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list S3 files: {str(e)}")
+
+@app.get("/list/gcs")
+async def list_gcs_files():
+    """List files in Google Cloud Storage bucket"""
+    if not CloudConfig.GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS bucket name not configured")
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(CloudConfig.GCS_BUCKET_NAME)
+        blobs = bucket.list_blobs()
+        files = []
+        for blob in blobs:
+            files.append({
+                "name": blob.name,
+                "size": blob.size,
+                "updated": blob.updated.isoformat() if blob.updated else None
+            })
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list GCS files: {str(e)}")
+
+@app.get("/list/drive")
+async def list_drive_files():
+    """List files in Google Drive (folder if configured)"""
+    try:
+        service = get_drive_service()
+        query = None
+        if CloudConfig.GOOGLE_DRIVE_FOLDER_ID:
+            query = f"'{CloudConfig.GOOGLE_DRIVE_FOLDER_ID}' in parents"
+        results = service.files().list(
+            q=query,
+            pageSize=20,
+            fields="files(id, name, mimeType, modifiedTime, size, webViewLink)"
+        ).execute()
+        files = results.get("files", [])
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list Drive files: {str(e)}")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
