@@ -66,7 +66,7 @@ The first time you use the Drive endpoint, you may need to authenticate manually
 ### 5. Run the Application
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Or with uvicorn directly:
